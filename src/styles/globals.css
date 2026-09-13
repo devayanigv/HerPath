@@ -1,0 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { @apply bg-neutral-50 text-neutral-900 antialiased; }
+  body { @apply min-h-screen font-sans text-base leading-relaxed; }
+  button, input, select { font: inherit; }
+  :focus-visible { @apply outline-none ring-2 ring-primary-500 ring-offset-2; }
+}

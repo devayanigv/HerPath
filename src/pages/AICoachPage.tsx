@@ -1,0 +1,21 @@
+import { useState } from 'react'
+import { Button, Card, Input } from '../components/ui'
+import { roadmapWeek } from '../lib/careerProgress'
+import { findCareerPath } from '../mock-data/careerPaths'
+import { getCoachResponse } from '../services/aiCoach'
+import { useAppStore } from '../store/useAppStore'
+
+const prompts = ['Why was this career recommended for me?', 'Help me understand my skill gaps', "Make this week's roadmap easier", 'Help me explain my career break', 'Help me improve my resume', 'What should I do next?']
+
+export function AICoachPage() {
+  const state = useAppStore()
+  const { userProfile, onboardingAnswers, selectedCareerPath, roadmapTasks } = state
+  const path = selectedCareerPath ?? findCareerPath()
+  const [input, setInput] = useState('')
+  const [response, setResponse] = useState<string | null>(null)
+  const ask = (prompt: string) => { if (!prompt.trim()) return; setResponse(getCoachResponse(prompt, { userProfile, onboardingAnswers, careerPath: path, roadmapTasks })); setInput('') }
+  const goal = onboardingAnswers.goals[0] ?? 'Explore a practical next step'
+  return <div className="mx-auto max-w-5xl px-5 py-12 sm:px-6"><section className="max-w-3xl"><p className="text-sm font-semibold uppercase tracking-[0.16em] text-secondary-600">Career AI Coach</p><h1 className="mt-2 font-display text-5xl font-semibold tracking-tight text-primary-800">Practical guidance for the step you&apos;re taking now.</h1><p className="mt-4 text-lg text-neutral-700">Use this space to work through a specific career decision, task, or concern—grounded in your own profile and plan.</p></section><Card className="mt-8 border-primary-100 bg-primary-50 p-5"><p className="text-sm font-semibold text-primary-800">Your current context</p><div className="mt-4 grid gap-3 sm:grid-cols-3"><Context label="Current goal" value={goal} /><Context label="Career path" value={path.title} /><Context label="Roadmap" value={`Week ${roadmapWeek(roadmapTasks)} of 8`} /></div></Card><div className="mt-8 grid gap-6 lg:grid-cols-[0.85fr_1.15fr]"><Card className="p-6"><h2 className="font-display text-2xl font-semibold text-primary-800">Start with a useful question</h2><p className="mt-2 text-sm text-neutral-700">Choose a prompt based on what feels most useful today.</p><div className="mt-5 space-y-2">{prompts.map((prompt) => <button key={prompt} type="button" onClick={() => ask(prompt)} className="w-full rounded-control border border-neutral-200 px-4 py-3 text-left text-sm font-medium text-neutral-700 hover:border-primary-500 hover:bg-primary-50">{prompt} <span className="float-right text-primary-700">→</span></button>)}</div></Card><div className="space-y-5"><Card className="min-h-72 p-6"><p className="text-sm font-semibold uppercase tracking-[0.14em] text-secondary-600">Guided reflection</p>{response ? <div className="mt-5"><h2 className="font-display text-2xl font-semibold text-primary-800">A practical place to begin</h2><p className="mt-4 leading-7 text-neutral-700">{response}</p><p className="mt-6 border-t border-neutral-200 pt-4 text-sm text-neutral-500">This is a planning prompt, not a guaranteed outcome or professional advice.</p></div> : <div className="mt-12 max-w-md"><h2 className="font-display text-3xl font-semibold text-primary-800">What would help today?</h2><p className="mt-3 text-neutral-700">Pick a focused prompt or ask in your own words. Your coach will use your current goal, path, and roadmap as context.</p></div>}</Card><Card className="p-4"><form onSubmit={(event) => { event.preventDefault(); ask(input) }}><label className="sr-only" htmlFor="coach-question">Ask a career question</label><div className="flex flex-col gap-3 sm:flex-row"><Input id="coach-question" value={input} onChange={(event) => setInput(event.target.value)} placeholder="Ask about your next step, skills, resume, or career story" /><Button type="submit">Ask coach</Button></div></form></Card></div></div></div>
+}
+
+function Context({ label, value }: { label: string; value: string }) { return <div className="rounded-control bg-white p-3"><p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">{label}</p><p className="mt-1 text-sm font-semibold text-primary-800">{value}</p></div> }
