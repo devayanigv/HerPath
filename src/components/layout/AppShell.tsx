@@ -18,23 +18,41 @@ export function AppShell() {
           <Link className="font-display text-2xl font-semibold tracking-tight text-primary-700" to="/">
             HerPath
           </Link>
-          <div className="flex items-center gap-6">
-            <Link className="text-sm font-medium text-neutral-700 hover:text-primary-700" to="/demo">
-              How It Works
-            </Link>
-            {session ? (
+
+          {session ? (
+            <nav className="flex items-center gap-5">
+              <Link className="text-sm font-medium text-neutral-700 hover:text-primary-700" to="/dashboard">
+                Dashboard
+              </Link>
+              <Link className="text-sm font-medium text-neutral-700 hover:text-primary-700" to="/roadmap">
+                Roadmap
+              </Link>
+              <Link className="text-sm font-medium text-neutral-700 hover:text-primary-700" to="/skills">
+                Skills
+              </Link>
+              <Link className="text-sm font-medium text-neutral-700 hover:text-primary-700" to="/resume">
+                Resume
+              </Link>
+              <Link className="text-sm font-medium text-neutral-700 hover:text-primary-700" to="/ai-coach">
+                AI Coach
+              </Link>
               <button
                 onClick={handleLogout}
                 className="text-sm font-medium text-neutral-700 hover:text-primary-700"
               >
                 Log Out
               </button>
-            ) : (
+            </nav>
+          ) : (
+            <div className="flex items-center gap-6">
+              <Link className="text-sm font-medium text-neutral-700 hover:text-primary-700" to="/demo">
+                How It Works
+              </Link>
               <Link className="text-sm font-medium text-neutral-700 hover:text-primary-700" to="/login">
                 Log In
               </Link>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </header>
       <main>

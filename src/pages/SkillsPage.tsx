@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Badge, Card, ProgressBar } from '../components/ui'
-import { findCareerPath } from '../mock-data/careerPaths'
+import { Badge, Card, ProgressBar, Button } from '../components/ui'
 import { useAppStore } from '../store/useAppStore'
 
 type SkillStatus = 'Strong' | 'Developing' | 'Needs Development'
@@ -9,8 +8,21 @@ type SkillItem = { name: string; category: string; status: SkillStatus; level: n
 
 export function SkillsPage() {
   const { onboardingAnswers, selectedCareerPath, roadmapTasks } = useAppStore()
-  const path = selectedCareerPath ?? findCareerPath()
+  const path = selectedCareerPath
   const [selected, setSelected] = useState<SkillItem | null>(null)
+
+  if (!path) {
+    return (
+      <div className="mx-auto max-w-3xl px-5 py-12 sm:px-6">
+        <Card className="p-8 text-center">
+          <h1 className="font-display text-3xl font-semibold text-primary-800">Choose a career path first</h1>
+          <p className="mt-3 text-neutral-700">Your skills gap is calculated against a specific career direction. Explore paths to see this page come to life.</p>
+          <Link className="mt-6 inline-block" to="/career-discovery"><Button>Explore career paths</Button></Link>
+        </Card>
+      </div>
+    )
+  }
+
   const current = [...onboardingAnswers.technicalSkills.map((name) => ({ name, category: 'Technical skills' })), ...onboardingAnswers.professionalSkills.map((name) => ({ name, category: 'Professional skills' }))]
   const currentSkills = current.length ? current : [{ name: 'Communication', category: 'Professional skills' }, { name: 'Project coordination', category: 'Professional skills' }, { name: 'Organization', category: 'Professional skills' }]
   const skills: SkillItem[] = [...currentSkills.map(({ name, category }, index) => ({ name, category, status: index === 0 ? 'Strong' as const : 'Developing' as const, level: index === 0 ? 78 : 58, target: 80, why: `${name} supports clear, reliable work in ${path.title} roles.`, improvement: `Use a small, practical task to show how you apply ${name}.` })), ...(path.developSkills ?? []).filter((name) => !currentSkills.some((skill) => skill.name.toLowerCase() === name.toLowerCase())).map((name) => ({ name, category: 'Target career skills', status: 'Needs Development' as const, level: 20, target: 75, why: `${name} is commonly useful when moving into ${path.title}.`, improvement: `Start with an introductory activity, then use it in a small practice project.` }))]

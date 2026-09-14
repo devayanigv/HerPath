@@ -4,6 +4,7 @@ import { Button, Card, Input, ProgressBar, Select, StepIndicator } from '../comp
 import { useAppStore } from '../store/useAppStore'
 import { supabase } from '../supabaseClient'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../components/Toast'
 import type { ExperienceEntry } from '../types'
 
 const steps = ['About You', 'Experience', 'Skills', 'Goals', 'Preferences']
@@ -18,6 +19,7 @@ export function OnboardingPage() {
   const navigate = useNavigate()
   const { userProfile, onboardingAnswers, setUserProfile, setOnboardingAnswers } = useAppStore()
   const { session } = useAuth()
+  const { showToast } = useToast()
   const [step, setStep] = useState(0)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [customTechnical, setCustomTechnical] = useState('')
@@ -40,33 +42,29 @@ export function OnboardingPage() {
   }
 
   const next = async () => {
-    console.log('--- NEXT CLICKED ---')
-    console.log('Session:', session)
-
-    if (!validate()) {
-      console.log('Validation FAILED, stopping here')
-      return
-    }
-
-    console.log('Validation passed, attempting save...')
+    if (!validate()) return
 
     if (session) {
-      const { data: obData, error: onboardingError } = await supabase.from('onboarding_responses').upsert({
+      const { error: onboardingError } = await supabase.from('onboarding_responses').upsert({
         id: session.user.id,
         answers: answers,
         updated_at: new Date().toISOString(),
-      }).select()
-      console.log('Onboarding save result:', obData, onboardingError)
+      })
+      if (onboardingError) {
+        console.error('Onboarding save error:', onboardingError)
+        showToast('Failed to save your progress. Please check your connection and try again.')
+      }
 
-      const { data: profData, error: profileError } = await supabase.from('profiles').upsert({
+      const { error: profileError } = await supabase.from('profiles').upsert({
         id: session.user.id,
         full_name: userProfile.name,
         years_of_experience: userProfile.yearsOfExperience ?? null,
         location: userProfile.location ?? null,
-      }).select()
-      console.log('Profile save result:', profData, profileError)
-    } else {
-      console.log('No session found! Cannot save.')
+      })
+      if (profileError) {
+        console.error('Profile save error:', profileError)
+        showToast('Failed to save your profile. Please try again.')
+      }
     }
 
     if (step === steps.length - 1) {
